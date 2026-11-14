@@ -10,3 +10,8 @@ config.local.json
 build/
 *.hex
 *.elf
+
+# test suite
+tests/.tester_settings.json
+tests/reports/
+.pytest_cache/
