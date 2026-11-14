@@ -1,16 +1,49 @@
 # T-Minus_6 hardware triage
 
-One script, `triage.py`, that walks every piece of hardware and prints a
-PASS / FAIL / SKIP line per check, plus a summary at the end. No GUI.
+Two front ends for the same hardware:
+
+- `triage_gui.py`: a PyQt5 window with a **Case** mode and a **Func** mode (below).
+- `triage.py`: the original terminal script that walks every piece of hardware and
+  prints a PASS / FAIL / SKIP line per check, plus a summary at the end.
 
 Also here: the bench sketches `PinTester.ino`, `ServoTest.ino`, `StepperTest.ino`
 (upload to the board named in the filename, 115200 baud).
 
 ## Install
 
-    pip install -r tests/requirements.txt      # pyserial, pygame, opencv-python
+    pip install -r tests/requirements.txt      # pyserial, pygame, opencv-python, PyQt5
 
-## Run
+## GUI
+
+    python tests/triage_gui.py
+
+Connect devices in the left panel (COM port for USB boards, `ip:port` for the UNO Qs;
+any of them accepts either), then pick a mode with the toggle at the top. **STOP ALL**
+stops the wheels, releases the stepper, disarms the tower and stops a running test.
+
+**Case mode** runs acceptance tests per sector, written from
+`docs/T-Minus_6_Project_Document.pdf` (its "Test it" lists and test checklist):
+
+| Sector | Checks |
+|---|---|
+| Weather station | `W` stream every 2 s, DHT11 ranges, hot/cold states and the 1 C hysteresis (via `V,temp`), LCD/LED/buzzer prompts, hit LED, game over, reset |
+| Robot (UNO Q #1) | scan rate and +/-45 deg sweep, 10 cm accuracy, 8 cm stop flag and forward refusal, four wheels, tank turn, 300 ms timeout, bumpers, auto-pilot LED, `X`/`R` latch |
+| Tower (UNO Q #2) | `F` answered by `K`, one ball per shot, double `F` ignored, disarm/re-arm, test button, 2-3 s ball flight (you click when it lands), optional pan |
+| Camera | stream opens, 320x240, 15-20 fps, live picture and delay |
+| Gamepad | controller found, stick rest inside the 8% dead zone, full travel, Y/B/Start numbers match `laptop/config.py` |
+| Wiring | wire by wire with the PinTester board (weather / robot / tower list) |
+
+Automatic checks read the board's replies; things only a person can judge are asked in
+the prompt panel (keys: Y / N / S / Enter). **Save report** writes `tests/reports/`.
+
+**Func mode** has one tab per part: Stepper and Servo sliders, LCD text, Tower fire,
+Robot drive with a live radar, Weather readout, Camera, and Gamepad (the stick/trigger
+vector in an XYZ cube; optionally forwarded to the robot as `D,left,right,0`).
+Stepper, Servo (bench target) and LCD go through the PinTester sketch on a spare UNO,
+because the production firmware has no commands for them; the Servo tab can also drive
+the tower's pan servo (`A,angle`).
+
+## Command line
 
     python tests/triage.py                     # everything, asks before each board
     python tests/triage.py weather --port COM5 # just one board
