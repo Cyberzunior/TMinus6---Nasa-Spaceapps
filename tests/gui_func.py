@@ -702,7 +702,7 @@ class CameraStream(QtCore.QObject):
         try:
             import cv2
         except ImportError:
-            self.status.emit("opencv missing: pip install -r tests/requirements.txt")
+            self.status.emit("opencv missing: pip install -r requirements.txt")
             return
         src = int(url) if url.isdigit() else url
         self.status.emit(f"connecting to {url} (up to 8 s) ...")
@@ -877,7 +877,7 @@ class GamepadTab(FuncTab):
             self.fwd.setChecked(False)
         if not gamepad_io.available():
             self.banner.setVisible(True)
-            self.banner.setText("pygame is missing: pip install -r tests/requirements.txt")
+            self.banner.setText("pygame is missing: pip install -r requirements.txt")
 
     def _rescan(self):
         if not gamepad_io.available():

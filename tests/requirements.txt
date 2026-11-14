@@ -1,4 +1,0 @@
-pyserial>=3.5
-pygame>=2.5
-opencv-python>=4.8
-PyQt5>=5.15

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """T-Minus_6 hardware triage GUI.
 
-    pip install -r tests/requirements.txt
+    pip install -r requirements.txt
     python tests/triage_gui.py
 
 Two modes, toggled at the top:

@@ -1,8 +1,17 @@
 # pip uninstall pygame     (if the plain "pygame" package is installed: the two cannot live together)
+
+# laptop game
 pygame-ce>=2.5
 numpy>=1.26
 pyserial>=3.5
 opencv-python>=4.8
+
+# tests and GUI test tools (tests/gui_*.py, tests/triage_gui.py)
+PyQt5>=5.15
+pytest>=8.0
+
 # optional
 moderngl>=5.10      # not used yet: post-processing runs on the CPU
-pytest>=8.0
+
+# not pip-installed: the "arduino" module used by firmware/*/linux_bridge
+# comes with the UNO Q's own runtime

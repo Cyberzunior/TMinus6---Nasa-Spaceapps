@@ -26,7 +26,7 @@ Also here: the bench sketches `PinTester.ino`, `ServoTest.ino`, `StepperTest.ino
 
 ## Install
 
-    pip install -r tests/requirements.txt      # pyserial, pygame, opencv-python, PyQt5
+    pip install -r requirements.txt            # from the repo root; includes PyQt5
 
 ## GUI
 

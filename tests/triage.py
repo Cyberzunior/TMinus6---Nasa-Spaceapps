@@ -145,7 +145,7 @@ def open_serial_link(args, title):
         try:
             from serial.tools import list_ports
         except ImportError:
-            print("pyserial missing: pip install -r tests/requirements.txt")
+            print("pyserial missing: pip install -r requirements.txt")
             return None
         ports = [(p.device, p.description or "") for p in list_ports.comports()]
         if not ports:
@@ -448,7 +448,7 @@ def triage_camera(args):
     try:
         import cv2
     except ImportError:
-        print("  opencv missing: pip install -r tests/requirements.txt")
+        print("  opencv missing: pip install -r requirements.txt")
         skip("camera: stream opens", "no opencv")
         return
     urls = [args.url] if args.url else CAMERA_URLS
@@ -488,7 +488,7 @@ def triage_gamepad(args):
     try:
         import pygame
     except ImportError:
-        print("  pygame missing: pip install -r tests/requirements.txt")
+        print("  pygame missing: pip install -r requirements.txt")
         skip("gamepad: detected", "no pygame")
         return
     pygame.init()

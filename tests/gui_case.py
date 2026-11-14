@@ -474,7 +474,7 @@ def sector_camera(ctx):
     try:
         import cv2
     except ImportError:
-        ctx.skip("opencv installed", "pip install -r tests/requirements.txt")
+        ctx.skip("opencv installed", "pip install -r requirements.txt")
         return
     url = (ctx.opts.get("camera_url") or "").strip()
     urls = [url] if url else CAMERA_URLS
@@ -529,7 +529,7 @@ def sector_camera(ctx):
 # ============================================================ gamepad
 def sector_gamepad(ctx):
     if not gamepad_io.available():
-        ctx.skip("pygame installed", "pip install -r tests/requirements.txt")
+        ctx.skip("pygame installed", "pip install -r requirements.txt")
         return
     cfg = laptop_config()
     pads = gamepad_io.rescan()
