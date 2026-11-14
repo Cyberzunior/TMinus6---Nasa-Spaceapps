@@ -1,3 +1,18 @@
+# T-Minus_6 tests
+
+## Automated tests (pytest)
+
+Headless, no hardware, about a minute:
+
+    python tests/run_tests.py            # built-in runner, no extra packages
+    pytest tests                         # same tests with pytest (pip install pytest)
+
+`test_model` (mixer, dead zone, movement model, calibration), `test_protocol_config` (every line, garbage, settings file),
+`test_game_rules` (hits, protection, game over, asteroid sequence, weather, zones, auto-pilot dodge 10 of 10),
+`test_devices` (discovery, RTT, failsafe, latch, tower safety, unplug and replug over real loopback sockets),
+`test_firmware_bridges` (static checks of the sketches, UNO Q bridge self-tests), `test_app_flow` (the whole game in `--sim`).
+Soak: `python laptop/tools/soak.py --demos 3`.
+
 # T-Minus_6 hardware triage
 
 Two front ends for the same hardware:
