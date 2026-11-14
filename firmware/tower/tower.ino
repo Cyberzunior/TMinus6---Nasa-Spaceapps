@@ -1,50 +1,67 @@
-// T-Minus_6 asteroid tower, UNO Q #2 (microcontroller side). UNTESTED starting point.
-// Lines in: F (fire one ball), X (game over, disarm), R (re-arm), A,angle (only with the pan servo)
-// Lines out: K (ball released)
+// T-Minus_6 asteroid tower, firmware v2. Arduino UNO Q #2, microcontroller side. 3.3 V pins.
+//   in : F (fire one ball)  A,angle (pan servo)  X (disarm)  R (re-arm)  T,rest,push,ms (tune the pusher)
+//   out: K (ball released)
+// F is ignored when disarmed or within 1.5 s of the last fire. The three pusher numbers are NOT stored: the laptop
+// resends them (T,...) every time it connects. The test button on D2 fires too (and answers K, so the laptop sees it).
+// UNTESTED on hardware. Check: the Servo library works on the UNO Q core, and D9 / D10 can drive servos.
+#include <Arduino_RouterBridge.h>
 #include <Servo.h>
+#define FW_VERSION 2
+#define HAS_PAN 1                         // 1 once the second SG90 (pan) is fitted
 
 const int PUSH_PIN = 9, PAN_PIN = 10, LED = 13, BTN = 2;
-const int REST_DEG = 20, PUSH_DEG = 100;     // tune: how far the pusher swings to release one ball
-const unsigned long PUSH_MS = 350;
-#define HAS_PAN 0                            // set to 1 if you add the second servo
+const unsigned long MIN_GAP_MS = 1500;
+int restDeg = 20, pushDeg = 100;          // tune: how far the pusher swings to release one ball
+unsigned long pushMs = 350;
 
 Servo pusher;
 #if HAS_PAN
 Servo pan;
 #endif
 bool armed = true, pushing = false;
-unsigned long tPush = 0, tBtn = 0;
-String rx = "";
+unsigned long tPush = 0, tFire = 0, tBtn = 0;
+volatile bool pendingF = false, pendingX = false, pendingR = false, pendingA = false, pendingT = false;
+volatile int newAngle = 90, tRest = 20, tPushDeg = 100;
+volatile long tMs = 350;
 
-void fire() {
-  if (!armed || pushing) return;
-  pusher.write(PUSH_DEG); pushing = true; tPush = millis();
-  Serial.println("K");
+void onLine(String s) {                   // sets flags only; loop() does the work
+  if (s == "F") pendingF = true;
+  else if (s == "X") pendingX = true;
+  else if (s == "R") pendingR = true;
+  else if (s.startsWith("A,")) { newAngle = constrain(s.substring(2).toInt(), 0, 180); pendingA = true; }
+  else if (s.startsWith("T,")) {
+    int a = s.indexOf(',', 2), b = s.indexOf(',', a + 1);
+    if (a > 0 && b > 0) { tRest = s.substring(2, a).toInt(); tPushDeg = s.substring(a + 1, b).toInt(); tMs = s.substring(b + 1).toInt(); pendingT = true; }
+  }
 }
-void handleLine(const String& s) {
-  if (s == "F") fire();
-  else if (s == "X") armed = false;
-  else if (s == "R") armed = true;
-#if HAS_PAN
-  else if (s.startsWith("A,")) pan.write(constrain(s.substring(2).toInt(), 0, 180));
-#endif
+void send(const String& s) { Bridge.notify("mcu_line", s); }
+
+void fire(unsigned long now) {
+  if (!armed || pushing || (tFire != 0 && now - tFire < MIN_GAP_MS)) return;
+  pusher.write(pushDeg); pushing = true; tPush = now; tFire = now;
+  send("K");
 }
 void setup() {
-  Serial.begin(115200);
   pinMode(LED, OUTPUT); pinMode(BTN, INPUT_PULLUP);
-  pusher.attach(PUSH_PIN); pusher.write(REST_DEG);
+  pusher.attach(PUSH_PIN); pusher.write(restDeg);
 #if HAS_PAN
   pan.attach(PAN_PIN); pan.write(90);
 #endif
+  Bridge.begin();
+  Bridge.provide_safe("line", onLine);
 }
 void loop() {
   unsigned long now = millis();
-  while (Serial.available()) {
-    char c = Serial.read();
-    if (c == '\n') { rx.trim(); if (rx.length()) handleLine(rx); rx = ""; }
-    else if (c != '\r' && rx.length() < 24) rx += c;
-  }
-  if (pushing && now - tPush > PUSH_MS) { pusher.write(REST_DEG); pushing = false; }
-  if (digitalRead(BTN) == LOW && now - tBtn > 500) { tBtn = now; fire(); }   // test-fire button
+  if (pendingT) { pendingT = false; restDeg = constrain(tRest, 0, 180); pushDeg = constrain(tPushDeg, 0, 180); pushMs = constrain(tMs, 100, 1500); if (!pushing) pusher.write(restDeg); }
+  if (pendingX) { pendingX = false; armed = false; }
+  if (pendingR) { pendingR = false; armed = true; }
+#if HAS_PAN
+  if (pendingA) { pendingA = false; pan.write(newAngle); }
+#else
+  pendingA = false;
+#endif
+  if (pendingF) { pendingF = false; fire(now); }
+  if (pushing && now - tPush > pushMs) { pusher.write(restDeg); pushing = false; }
+  if (digitalRead(BTN) == LOW && now - tBtn > 500) { tBtn = now; fire(now); }   // test-fire button
   digitalWrite(LED, armed);
 }
