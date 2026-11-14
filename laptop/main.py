@@ -1,30 +1,56 @@
-"""Starter: gamepad -> one movement model -> robot. The game, auto-pilot, camera and tower go on top of this."""
-import pygame
-import config as C
-from model import dead_zone, wheel_mix
-from robot_link import UdpLink
+"""T-Minus_6: the game.   python main.py [--sim] [--windowed] [--debug]
 
-pygame.init()
-pygame.joystick.init()
-if pygame.joystick.get_count() == 0:
-    raise SystemExit("No gamepad. Pair it first and run gamepad_test.py")
-pad = pygame.joystick.Joystick(0)
-pad.init()
-robot = UdpLink(C.ROBOT_ADDR)
-autopilot, lives = False, C.LIVES
-clock = pygame.time.Clock()
+  --sim              every device is a software one (no hardware needed). Mixed mode: --sim-robot --sim-tower
+                     --sim-station --sim-camera in any combination.
+  --windowed         start windowed even if FULLSCREEN is set in config.local.json
+  --debug            FPS / thread / packet overlay (F4 toggles it) and log lines on the console
+  --demo             scripted rehearsal: timed asteroids and hot / cold zones
+  --no-audio         silent
+  --seed N           repeatable asteroid timing"""
+import argparse
+import os
+import sys
 
-while True:
-    for e in pygame.event.get():
-        if e.type == pygame.QUIT:
-            raise SystemExit
-        if e.type == pygame.JOYBUTTONDOWN and e.button == C.BTN_AUTOPILOT:
-            autopilot = not autopilot
-            print("autopilot", autopilot)
-    speed = -dead_zone(pad.get_axis(C.AXIS_SPEED))      # up on the stick = forward
-    turn = dead_zone(pad.get_axis(C.AXIS_TURN))
-    left, right = wheel_mix(speed, turn)
-    robot.send(f"D,{left},{right},{int(autopilot)}")    # 50 times a second
-    for line in robot.recv_lines():
-        pass                                            # S,... scan and B,... bumper lines go to the auto-pilot
-    clock.tick(50)
+HERE = os.path.dirname(os.path.abspath(__file__))
+if HERE not in sys.path:
+    sys.path.insert(0, HERE)
+os.chdir(HERE)
+
+
+def parse(argv=None):
+    p = argparse.ArgumentParser(description="T-Minus_6 game")
+    p.add_argument("--sim", action="store_true", help="simulate all devices")
+    for n in ("robot", "tower", "station", "camera"):
+        p.add_argument("--sim-" + n, action="store_true", help="simulate the " + n)
+    p.add_argument("--windowed", action="store_true")
+    p.add_argument("--debug", action="store_true")
+    p.add_argument("--demo", action="store_true")
+    p.add_argument("--no-audio", action="store_true")
+    p.add_argument("--no-serial", action="store_true", help="never open serial ports")
+    p.add_argument("--seed", type=int, default=None)
+    return p.parse_args(argv)
+
+
+def main(argv=None):
+    ns = parse(argv)
+    try:
+        import numpy  # noqa: F401
+        import pygame  # noqa: F401
+        import serial  # noqa: F401
+    except ImportError as e:
+        print("A required package is missing (%s).\nInstall everything with:  pip install -r requirements.txt" % e)
+        return 1
+    import pygame
+    from app import App, Args
+    pygame.init()
+    args = Args(**{k: v for k, v in vars(ns).items() if k != "sim"}, sim=ns.sim)
+    app = App(args)
+    try:
+        app.run()
+    except KeyboardInterrupt:
+        app.shutdown()
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

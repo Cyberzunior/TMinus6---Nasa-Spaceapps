@@ -15,3 +15,7 @@ build/
 tests/.tester_settings.json
 tests/reports/
 .pytest_cache/
+
+# game logs and local settings
+logs/
+laptop/config.local.json

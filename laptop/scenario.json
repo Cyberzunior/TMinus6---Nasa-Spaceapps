@@ -1,0 +1,10 @@
+{
+  "_help": "Sizes in cm on the real board, Earth at (0, 0), x to the right, y toward the player. Give a piece either x/y or angle_deg (+ offset_cm from the orbit ring). real: true = also place a real object there on the table.",
+  "debris": [
+    {"angle_deg": 150, "offset_cm": 0, "size": 3.0, "real": true},
+    {"angle_deg": 240, "offset_cm": 4, "size": 3.0, "real": true},
+    {"angle_deg": 330, "offset_cm": -3, "size": 2.5, "real": false}
+  ],
+  "tower": {"x": 62, "y": 34},
+  "asteroid_sector_deg": [20, 110]
+}

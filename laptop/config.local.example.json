@@ -1,0 +1,13 @@
+{
+  "_help": "Copy to config.local.json (git-ignored). Any setting from config.py can go here. Never commit the real file.",
+  "WIFI_SSID": "my-phone-hotspot",
+  "WIFI_PASSWORD": "change-me",
+  "CAMERA_URL": "http://192.168.43.60:81/stream",
+  "ROBOT_ADDR": null,
+  "TOWER_ADDR": null,
+  "WEATHER_PORT": null,
+  "V_MAX": 15.0,
+  "W_MAX": 90.0,
+  "TURN_GAIN": 0.6,
+  "SYNC_DELAY_MS": 0
+}

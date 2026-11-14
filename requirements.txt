@@ -1,0 +1,8 @@
+# pip uninstall pygame     (if the plain "pygame" package is installed: the two cannot live together)
+pygame-ce>=2.5
+numpy>=1.26
+pyserial>=3.5
+opencv-python>=4.8
+# optional
+moderngl>=5.10      # not used yet: post-processing runs on the CPU
+pytest>=8.0
